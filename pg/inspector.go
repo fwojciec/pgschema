@@ -7,6 +7,24 @@ import (
 	"github.com/lib/pq"
 )
 
+// -- Get possible types in a PostgreSQL database
+// SELECT
+// c.relname AS table_name,
+// a.attname AS column_name,
+// t.typname AS data_type,
+// a.attnotnull AS not_null,
+// c.relkind
+// FROM pg_catalog.pg_class c
+// JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid
+// JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid
+// JOIN pg_catalog.pg_type t ON a.atttypid = t.oid
+// WHERE
+// c.relname = ANY($1)
+// AND n.nspname = $2
+// AND a.attnum > 0
+// AND NOT a.attisdropped
+// ORDER BY c.relname, a.attnum;
+
 type inspector struct {
 	db *DB
 }
@@ -26,17 +44,24 @@ func (s *inspector) Inspect(ctx context.Context, schema string, tables []string)
 	}
 	defer tx.Rollback()
 
-	const q = `SELECT c.relname AS table_name, a.attname AS column_name, format_type(a.atttypid, a.atttypmod) AS data_type,
-  a.attnotnull AS not_null,
-  c.relkind
+	const q = `
+SELECT
+    c.relname AS table_name,
+    a.attname AS column_name,
+    t.typname AS data_type,
+    a.attnotnull AS not_null,
+    c.relkind
 FROM pg_catalog.pg_class c
 JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid
 JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid
-WHERE c.relname = ANY($1)
-  AND n.nspname = $2
-  AND a.attnum > 0
-  AND NOT a.attisdropped
-ORDER BY c.relname, a.attnum;`
+JOIN pg_catalog.pg_type t ON a.atttypid = t.oid
+WHERE
+    c.relname = ANY($1)
+    AND n.nspname = $2
+    AND a.attnum > 0
+    AND NOT a.attisdropped
+ORDER BY c.relname, a.attnum;
+`
 
 	var data []inspectionResult
 

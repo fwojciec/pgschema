@@ -8,6 +8,7 @@ import (
 
 	"github.com/fwojciec/pgschema"
 	"github.com/fwojciec/pgschema/pg"
+	"github.com/fwojciec/ta"
 )
 
 func TestInspector(t *testing.T) {
@@ -32,7 +33,7 @@ func TestInspector(t *testing.T) {
 
 		tables, err := inspector.Inspect(ctx, schema, []string{"test_table", "test_view", "test_materialized_view"})
 
-		ok(t, err)
+		ta.OK(t, err)
 		expected := []*pgschema.Table{
 			{
 				Name: "test_materialized_view",
@@ -40,17 +41,17 @@ func TestInspector(t *testing.T) {
 				Columns: []*pgschema.Column{
 					{
 						Name:    "id",
-						Type:    "integer",
+						Type:    "int4",
 						NotNull: false,
 					},
 					{
 						Name:    "name",
-						Type:    "character varying(255)",
+						Type:    "varchar",
 						NotNull: false,
 					},
 					{
 						Name:    "created_at",
-						Type:    "timestamp with time zone",
+						Type:    "timestamptz",
 						NotNull: false,
 					},
 				},
@@ -61,17 +62,17 @@ func TestInspector(t *testing.T) {
 				Columns: []*pgschema.Column{
 					{
 						Name:    "id",
-						Type:    "integer",
+						Type:    "int4",
 						NotNull: true,
 					},
 					{
 						Name:    "name",
-						Type:    "character varying(255)",
+						Type:    "varchar",
 						NotNull: false,
 					},
 					{
 						Name:    "created_at",
-						Type:    "timestamp with time zone",
+						Type:    "timestamptz",
 						NotNull: true,
 					},
 				},
@@ -82,24 +83,24 @@ func TestInspector(t *testing.T) {
 				Columns: []*pgschema.Column{
 					{
 						Name:    "id",
-						Type:    "integer",
+						Type:    "int4",
 						NotNull: false,
 					},
 					{
 						Name:    "name",
-						Type:    "character varying(255)",
+						Type:    "varchar",
 						NotNull: false,
 					},
 					{
 						Name:    "created_at",
-						Type:    "timestamp with time zone",
+						Type:    "timestamptz",
 						NotNull: false,
 					},
 				},
 			},
 		}
 
-		equals(t, expected, tables)
+		ta.Equals(t, expected, tables)
 	})
 
 }
